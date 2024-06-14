@@ -16,7 +16,7 @@ function Tasks() {
   };
 
   return (
-    <div className="bg-zinc-900 text-white min-h-screen p-4 ">
+    <div className="bg-zinc-900 text-white p-0 ">
       <Header total={total} />
       <div className="space-y-4">
         <Task title="lunar (i)" points={10000} onClaim={handleClaim} />

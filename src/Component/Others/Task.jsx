@@ -23,7 +23,7 @@ function Task({ title, points, onClaim }) {
   };
 
   return (
-    <div id="T9" className="bg-zinc-800 rounded-lg p-4">
+    <div id="T9" className="bg-zinc-800 rounded-lg p-2">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="font-semibold">{title}</h2>

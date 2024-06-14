@@ -70,8 +70,8 @@ const Main = () => {
   };
 
   return (
-    <div className="bg-zinc-900 text-white min-h-screen flex flex-col items-center p-4 space-y-4">
-      <div className="p-4 rounded-lg text-center w-full max-w-md">
+    <div className="bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
+      <div className="p-0 rounded-lg text-center w-full max-w-md">
         <p className="text-zinc-400 font-bold">Lunar Tokens</p>
         <p className="text-4xl font-bold">
           {(c4Count + d2Claimed).toFixed(2)} <span className="text-purple-400">lunar</span>

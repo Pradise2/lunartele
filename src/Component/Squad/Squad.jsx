@@ -3,7 +3,7 @@ import Footer from '../Others/Footer'
 
 const Squad = () => {
   return (
-    <div class="min-h-screen bg-zinc-900 text-white flex flex-col items-center p-4">
+    <div class=" bg-zinc-900 text-white flex flex-col items-center p-0">
     <h1 class="text-center text-2xl font-bold mb-6">
       The bigger the tribe, the better the vibe!
     </h1>
