@@ -24,27 +24,39 @@ const Boost = () => {
 
   useEffect(() => {
     // Wait for the Telegram WebApp to be ready
-    window.Telegram.WebApp.ready(() => {
+    const readyCallback = () => {
       if (window.Telegram && window.Telegram.WebApp) {
         const user = window.Telegram.WebApp.initDataUnsafe.user;
         setUserData(user);
         console.log('User data:', user);
 
-        // Store user data in Firestore
-        const userDataRef = doc(db, 'user', user.id.toString());
+        // Store user data in Firestore (inside the useEffect)
+        const userDataRef = doc(db, 'users', user.id.toString());
         setDoc(userDataRef, {
             userId: user.id,
             userName: user.username || user.first_name,
             isBot: user.is_bot,
             // ... Add other data points as needed
+        })
+        .then(() => {
+          console.log('User data stored in Firestore!');
+        })
+        .catch((error) => {
+          console.error('Error storing user data in Firestore:', error);
         });
       }
-    });
+    };
+
+    // Call the readyCallback once the Telegram WebApp is ready
+    window.Telegram.WebApp.ready(readyCallback);
+
+    // Cleanup: remove the event listener when the component unmounts
+    return () => window.Telegram.WebApp.removeReadyCallback(readyCallback);
   }, []);
 
   return (
     <>
-   <h1>Telegram User Data</h1>
+      <h1>Telegram User Data</h1>
       {userData ? (
         <div>
           <p>ID: {userData.id}</p>
@@ -55,8 +67,8 @@ const Boost = () => {
       ) : (
         <p>Loading user data...</p>
       )}
-<Footer/>
-</>
+      <Footer/>
+    </>
   );
 };
 
