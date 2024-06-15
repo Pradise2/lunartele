@@ -14,6 +14,7 @@ const firebaseConfig = {
   appId: "1:626801402709:web:d3653b964333a0de6845dc",
   measurementId: "G-517PH4LM9K",
 };
+Telegram.WebApp.ready();
 
 const userId = Telegram.WebApp.initDataUnsafe.user.id;
 
