@@ -1,6 +1,7 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom';
-import { db, collection, addDoc, serverTimestamp } from '../../firebaseConfig';
+import { app, db } from '../../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from '@firebase/firestore';
 import Footer from '../Others/Footer'
 
 function useQuery() {
