@@ -1,13 +1,17 @@
 import React from 'react'
-import { useSearchParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { db, collection, addDoc, serverTimestamp } from '../../firebaseConfig';
 import Footer from '../Others/Footer'
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 const Boost = () => {
-  const [searchParams] = useSearchParams();
+  const query = useQuery();
   
   useEffect(() => {
-    const userId = searchParams.get('userId');
+    const userId = query.get('userId');
     
     if (userId) {
       console.log(`User ID from URL: ${userId}`);
@@ -23,7 +27,7 @@ const Boost = () => {
         console.error('Error adding document: ', error);
       });
     }
-  }, [searchParams]);
+  }, [query]);
   return (
     <>
     <body class="bg-gray-900 flex items-center justify-center min-h-screen text-white">
