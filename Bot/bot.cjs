@@ -1,15 +1,39 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
-const TOKEN = process.env.TOKEN || '7413324952:AAEbvrvrXHSNvWC8wG9pjAvaWAr5iVPyVf8'; // Replace with your token or use .env for better security
+const { initializeApp } = require('firebase/app');
+const { getFirestore, doc, setDoc } = require('firebase/firestore');
+
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAURFbyDHkq626UusPHMijpxmcUOOl5-Tw",
+    authDomain: "test-f326f.firebaseapp.com",
+    projectId: "test-f326f",
+    storageBucket: "test-f326f.appspot.com",
+    messagingSenderId: "626801402709",
+    appId: "1:626801402709:web:d3653b964333a0de6845dc",
+    measurementId: "G-517PH4LM9K",
+    databaseURL: "https://test-f326f-default-rtdb.firebaseio.com/"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Telegram Bot Token
+const TOKEN = process.env.TOKEN || '7413324952:AAEbvrvrXHSNvWC8wG9pjAvaWAr5iVPyVf8';
 const bot = new Telegraf(TOKEN);
 
+// Web App Link
 const web_link = 'https://lunartele.vercel.app/';
-bot.start((ctx) => {
+
+// Start Handler
+bot.start(async (ctx) => {
     const startPayload = ctx.startPayload || '';
     const userId = ctx.chat.id;
     const urlSent = `${web_link}?ref=${startPayload}&userId=${userId}`;
     const user = ctx.message.from;
     const userName = user.username ? `@${user.username.replace(/[-.!]/g, '\\$&')}` : user.first_name;
+    const isBot = user.is_bot;
 
     const messageText = `
 *Hey, ${userName}\\! Welcome to Lunar\\!*
@@ -26,30 +50,42 @@ Bring them all into the game\\.
         }
     });
 
+    // Store User Data in Firestore
+    const userDataRef = doc(db, 'users', String(userId));
+    await setDoc(userDataRef, {
+        userId: userId,
+        userName: userName,
+        isBot: isBot,
+        // ... Add other data points as needed
+    });
+
     // Log client ID, username, and user information
     console.log(`Client ID: ${ctx.chat.id}`);
     console.log(`Username: ${user.username || 'N/A'}`);
     console.log('User Info:', user);
 });
 
-// Log when a user sends a message
+// Handle User Messages
 bot.on('message', (ctx) => {
     const userId = ctx.from.id;
     const messageText = ctx.message.text;
 
     console.log(`User ${userId} sent a message: ${messageText}`);
 
-    // Handle the message as needed
+    // Handle the message as needed (e.g., store messages in Firestore)
 });
 
-// Adding a custom command to show a button with a URL
+// Custom Command for Link
 bot.command('link', (ctx) => {
     ctx.reply('Check out Lunar here:', Markup.inlineKeyboard([
         Markup.button.url('Visit Lunar', web_link)
     ]));
 });
 
-// Log when the bot is launched
+// Launch the Bot
 bot.launch()
     .then(() => console.log('Bot started'))
     .catch((err) => console.error('Error launching bot:', err));
+
+// Export the bot object (for potential use in other files)
+module.exports = bot;
