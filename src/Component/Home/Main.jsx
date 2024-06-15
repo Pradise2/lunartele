@@ -1,26 +1,6 @@
 import tapps from '../../assets/tapps.png';
 import React, { useState, useEffect } from "react";
 import Footer from '../Others/Footer';
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
-
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAURFbyDHkq626UusPHMijpxmcUOOl5-Tw",
-  authDomain: "test-f326f.firebaseapp.com",
-  projectId: "test-f326f",
-  storageBucket: "test-f326f.appspot.com",
-  messagingSenderId: "626801402709",
-  appId: "1:626801402709:web:d3653b964333a0de6845dc",
-  measurementId: "G-517PH4LM9K",
-};
-Telegram.WebApp.ready();
-
-const userId = Telegram.WebApp.initDataUnsafe.user.id;
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 const Main = () => {
   const [count, setCount] = useState(10);
@@ -81,32 +61,6 @@ const Main = () => {
       setIsClaimClicked(false); // Reset the timer
     }
   };
-
-  // Function to store data in Cloud Firestore
-  const storeData = async () => {
-    try {
-      // Create a reference to the 'users' collection
-      const usersCollection = collection(db, 'usr');
-      // Create a document reference for the current user (you'll need a user ID)
-      const userDocRef = doc(usersCollection, `${userId}`); // Replace 'your-user-id' with the actual user ID
-
-      await setDoc(userDocRef, {
-        // Store your data
-        c4Count: c4Count,
-        d2Claimed: d2Claimed,
-        // ... other relevant data
-      });
-
-      console.log('Data stored successfully!');
-    } catch (error) {
-      console.error('Error storing data:', error);
-    }
-  };
-
-  // Call storeData whenever relevant data changes
-  useEffect(() => {
-    storeData();
-  }, [c4Count, d2Claimed]); // Add more state variables to this array if needed
 
   const formatTime = (time) => {
     if (time <= 0) return "00:00";
