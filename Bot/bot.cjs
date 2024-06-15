@@ -1,6 +1,5 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
-const axios = require('axios');
 const TOKEN = process.env.TOKEN || '7413324952:AAEbvrvrXHSNvWC8wG9pjAvaWAr5iVPyVf8'; // Replace with your token or use .env for better security
 const bot = new Telegraf(TOKEN);
 
