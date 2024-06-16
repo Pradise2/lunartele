@@ -36,7 +36,7 @@ const Main = () => {
    useEffect(() => {
     const fetchUserData = async () => {
       if (userId) {
-        const userRef = doc(db, 'users', userId);
+        const userRef = doc(db, 'user', userId);
         const userDocSnapshot = await getDoc(userRef);
 
         if (userDocSnapshot.exists()) {
