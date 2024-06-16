@@ -5,6 +5,7 @@ import Footer from '../Others/Footer';
 
 
 const Main = () => {
+  const [userId, setUserId] = useState(null);
   const [count, setCount] = useState(10);
   const [timer, setTimer] = useState(30);
   const [c4Count, setC4Count] = useState(0);
@@ -12,6 +13,23 @@ const Main = () => {
   const [d2, setD2] = useState(0);
   const [d2Claimed, setD2Claimed] = useState(0);
   const [isClaimClicked, setIsClaimClicked] = useState(false);
+
+  useEffect(() => {
+    window.onload = function() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
+        if (user) {
+          const userIdFromTelegram = user.id;
+          console.log('User ID:', userIdFromTelegram);
+          setUserId(userIdFromTelegram);
+              } else {
+          console.error('User data is not available.');
+        }
+      } else {
+        console.error('Telegram WebApp script is not loaded.');
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const intervalIdC2 = setInterval(() => {
@@ -81,7 +99,7 @@ const Main = () => {
       </div>
       <div className="text-center space-y-2">
         <p className="text-zinc-400">
-          Won’t stop! Timer shows refill, but the fun won’t flop! <span className="text-yellow-400">👍</span>
+          Won’t stop! Timer shows refill,{userId ? `${userId} ` : ''} but the fun won’t flop! <span className="text-yellow-400">👍</span>
         </p>
         <div className="p-2 flex justify-center space-x-4">
           <div className="bg-purple-800 p-2 rounded-lg flex">
