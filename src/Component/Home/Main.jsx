@@ -2,8 +2,6 @@ import tapps from '../../assets/tapps.png';
 import React, { useState, useEffect } from "react";
 import Footer from '../Others/Footer';
 
-
-
 const Main = () => {
   const [userId, setUserId] = useState(null);
   const [count, setCount] = useState(10);
@@ -22,7 +20,7 @@ const Main = () => {
           const userIdFromTelegram = user?.id;
           console.log('User ID:', userIdFromTelegram);
           setUserId(userIdFromTelegram);
-              } else {
+        } else {
           console.error('User data is not available.');
         }
       } else {
@@ -99,7 +97,7 @@ const Main = () => {
       </div>
       <div className="text-center space-y-2">
         <p className="text-zinc-400">
-          Won stop! Timer shows refill,{userIdFromTelegram ? `${userIdFromTelegram} ` : ''} but the fun won’t flop! <span className="text-yellow-400">👍</span>
+          Won stop! Timer shows refill, {userId ? `${userId} ` : ''} but the fun won’t flop! <span className="text-yellow-400">👍</span>
         </p>
         <div className="p-2 flex justify-center space-x-4">
           <div className="bg-purple-800 p-2 rounded-lg flex">
