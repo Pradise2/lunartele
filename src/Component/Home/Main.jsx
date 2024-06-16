@@ -85,6 +85,8 @@ const Main = () => {
     return `${minutes}:${seconds}`;
   };
 
+
+  
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
       <div className="p-2 rounded-lg text-center w-full max-w-md">
