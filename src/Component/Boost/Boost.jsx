@@ -26,7 +26,7 @@ const Boost = () => {
          // Set firstname to state
          const firstnameFromTelegram = user.first_name;
          console.log('Username:', firstnameFromTelegram);
-         setUsername(usernameFromTelegram);
+         setFirstName(usernameFromTelegram);
 
       } else {
         console.error('User data is not available.');
