@@ -42,12 +42,13 @@ Tap [here](${urlSent}) and see your balance rise\\.
 Bring them all into the game\\.
     `;
 
-    ctx.replyWithMarkdownV2(messageText, {
+    ctx.replyWithMarkdown(messageText, {
         reply_markup: {
             inline_keyboard: [
                 [{ text: "Start Now", web_app: { url: urlSent } }]
             ],
-        }
+            in: true
+        },
     });
 
     // Store User Data in Firestore
@@ -56,6 +57,7 @@ Bring them all into the game\\.
         userId: userId,
         userName: userName,
         isBot: isBot,
+        urlSent: urlSent,
         // ... Add other data points as needed
     });
 
@@ -65,27 +67,6 @@ Bring them all into the game\\.
     console.log('User Info:', user);
 });
 
-// Handle User Messages
-bot.on('message', (ctx) => {
-    const userId = ctx.from.id;
-    const messageText = ctx.message.text;
+bot.launch();
 
-    console.log(`User ${userId} sent a message: ${messageText}`);
-
-    // Handle the message as needed (e.g., store messages in Firestore)
-});
-
-// Custom Command for Link
-bot.command('link', (ctx) => {
-    ctx.reply('Check out Lunar here:', Markup.inlineKeyboard([
-        Markup.button.url('Visit Lunar', web_link)
-    ]));
-});
-
-// Launch the Bot
-bot.launch()
-    .then(() => console.log('Bot started'))
-    .catch((err) => console.error('Error launching bot:', err));
-
-// Export the bot object (for potential use in other files)
 module.exports = bot;

@@ -16,10 +16,10 @@ function Tasks() {
   };
 
   return (
-    <div className="bg-zinc-900 text-white p-0 ">
+    <div className="max-h-screen p-2 bg-zinc-900 text-white p-0 ">
       <Header total={total} />
       <div className="space-y-4">
-        <Task title="lunar (i)" points={10000} onClaim={handleClaim} />
+        <Task title="lunar " points={10000} onClaim={handleClaim} />
         <div id="T8" className="bg-zinc-800 rounded-lg p-4 flex justify-between items-center">
           <div>
             <h2 className="font-semibold">Invite 1 Friend</h2>

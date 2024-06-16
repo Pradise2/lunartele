@@ -2,6 +2,8 @@ import tapps from '../../assets/tapps.png';
 import React, { useState, useEffect } from "react";
 import Footer from '../Others/Footer';
 
+
+
 const Main = () => {
   const [count, setCount] = useState(10);
   const [timer, setTimer] = useState(30);
@@ -70,9 +72,9 @@ const Main = () => {
   };
 
   return (
-    <div className="bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
-      <div className="p-0 rounded-lg text-center w-full max-w-md">
-        <p className="text-zinc-400 font-bold">Lunar Token</p>
+    <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
+      <div className="p-2 rounded-lg text-center w-full max-w-md">
+        <p className="p-2 text-zinc-400 font-bold">Lunar Token</p>
         <p className="text-4xl font-bold">
           {(c4Count + d2Claimed).toFixed(2)} <span className="text-purple-400">lunar</span>
         </p>
@@ -81,7 +83,7 @@ const Main = () => {
         <p className="text-zinc-400">
           Won’t stop! Timer shows refill, but the fun won’t flop! <span className="text-yellow-400">👍</span>
         </p>
-        <div className="flex justify-center space-x-4">
+        <div className="p-2 flex justify-center space-x-4">
           <div className="bg-purple-800 p-2 rounded-lg flex">
             <p>{count} taps left</p>
           </div>

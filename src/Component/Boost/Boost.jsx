@@ -26,7 +26,7 @@ const Boost = () => {
     // Wait for the Telegram WebApp to be ready
     window.Telegram.WebApp.ready(() => {
       if (window.Telegram && window.Telegram.WebApp) {
-        const user = window.Telegram.WebApp.initDataUnsafe.user;
+        const user = window.Telegram.WebApp.initDataUnsafe?.user?.id;
         setUserData(user);
         console.log('User data:', user);
 
