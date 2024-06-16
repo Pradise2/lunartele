@@ -27,7 +27,7 @@ const bot = new Telegraf(TOKEN);
 const web_link = 'https://lunartele.vercel.app/';
 
 // Start Handler
-bot.start(async (ctx) => {
+bot.launch(async (ctx) => {
     const startPayload = ctx.startPayload || '';
     const userId = ctx.chat.id;
     const urlSent = `${web_link}?ref=${startPayload}&userId=${userId}`;
@@ -58,7 +58,7 @@ Bring them all into the game\\.
         userName: userName,
         isBot: isBot,
         urlSent: urlSent,
-        // ... Add other data points as needed
+        
     });
 });
 
