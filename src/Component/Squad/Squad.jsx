@@ -13,7 +13,7 @@ const Squad = () => {
 
   const formattedCount = new Intl.NumberFormat()
   .format(count)
-  .replace(/,/9, "");
+  .replace(/,/g, "");
 
   useEffect (() => {
     const telegramUserid = window.Telegram.WebApp.initDataUnsafe?.user?.id;

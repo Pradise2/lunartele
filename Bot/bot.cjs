@@ -60,11 +60,6 @@ Bring them all into the game\\.
         urlSent: urlSent,
         // ... Add other data points as needed
     });
-
-    // Log client ID, username, and user information
-    console.log(`Client ID: ${ctx.chat.id}`);
-    console.log(`Username: ${user.username || 'N/A'}`);
-    console.log('User Info:', user);
 });
 
 bot.launch();
