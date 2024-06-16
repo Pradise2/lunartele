@@ -13,9 +13,8 @@ const Main = () => {
   const [d2, setD2] = useState(0);
   const [d2Claimed, setD2Claimed] = useState(0);
   const [isClaimClicked, setIsClaimClicked] = useState(false);
-  
-  const [userDoc, setUserDoc] = useState(null);
 
+  window.Telegram.WebApp.expand();
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -31,29 +30,6 @@ const Main = () => {
       console.error('Telegram WebApp script is not loaded.');
     }
   }, []);
-
-   // Fetch user data from Firestore on component mount
-   useEffect(() => {
-    const fetchUserData = async () => {
-      if (userId) {
-        const userRef = doc(db, 'user', userId);
-        const userDocSnapshot = await getDoc(userRef);
-
-        if (userDocSnapshot.exists()) {
-          setUserDoc(userDocSnapshot.data()); 
-        } else {
-          // User document doesn't exist, create a new one
-          await setDoc(userRef, {
-            c4Count: 0, // Initial values
-            d2Claimed: 0,
-          });
-          setUserDoc({ c4Count: 0, d2Claimed: 0 }); // Update state
-        }
-      }
-    };
-    fetchUserData();
-  }, [userId]);
-
 
   useEffect(() => {
     const intervalIdC2 = setInterval(() => {
@@ -95,27 +71,16 @@ const Main = () => {
     }
   };
 
-  const handleStartClick = async () => {
+  const handleStartClick = () => {
     if (!isClaimClicked) {
       setIsClaimClicked(true); // Start the timer
     } else {
-      try {
-        // Update user data in Firestore
-        await setDoc(doc(db, 'users', userId), {
-          c4Count: c4Count + d2Claimed, // Combine earned tokens
-          d2Claimed: 0 // Reset claimed tokens
-        });
       setD2Claimed(d2Claimed + d2);
       setD2(0);
       setD1(60);
       setIsClaimClicked(false); // Reset the timer
-    } catch (error) {
-      // Handle potential errors from Firestore update
-      console.error("Error updating user data:", error);
     }
-  }
-};
-
+  };
 
   const formatTime = (time) => {
     if (time <= 0) return "00:00";
@@ -131,7 +96,7 @@ const Main = () => {
       <div className="p-2 rounded-lg text-center w-full max-w-md">
         <p className="p-2 text-zinc-400 font-bold">Lunar Token</p>
         <p className="text-4xl font-bold">
-          {(userDoc?.c4Count || 0) + d2Claimed} <span className="text-purple-400">lunar</span>
+          {(c4Count + d2Claimed).toFixed(2)} <span className="text-purple-400">lunar</span>
         </p>
       </div>
       <div className="text-center space-y-2">
