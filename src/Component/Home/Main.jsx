@@ -13,20 +13,18 @@ const Main = () => {
   const [isClaimClicked, setIsClaimClicked] = useState(false);
 
   useEffect(() => {
-    window.onload = function() {
-      if (window.Telegram && window.Telegram.WebApp) {
-        const user = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (user) {
-          const userIdFromTelegram = user?.id;
-          console.log('User ID:', userIdFromTelegram);
-          setUserId(userIdFromTelegram);
-        } else {
-          console.error('User data is not available.');
-        }
+    if (window.Telegram && window.Telegram.WebApp) {
+      const user = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (user) {
+        const userIdFromTelegram = user?.id;
+        console.log('User ID:', userIdFromTelegram);
+        setUserId(userIdFromTelegram);
       } else {
-        console.error('Telegram WebApp script is not loaded.');
+        console.error('User data is not available.');
       }
-    };
+    } else {
+      console.error('Telegram WebApp script is not loaded.');
+    }
   }, []);
 
   useEffect(() => {
