@@ -27,7 +27,7 @@ const bot = new Telegraf(TOKEN);
 const web_link = 'https://lunartele.vercel.app/';
 
 // Start Handler
-bot.launch(async (ctx) => {
+bot.start(async (ctx) => {
     const startPayload = ctx.startPayload || '';
     const userId = ctx.chat.id;
     const urlSent = `${web_link}?ref=${startPayload}&userId=${userId}`;
