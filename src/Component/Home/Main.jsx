@@ -255,7 +255,7 @@ const Main = () => {
     loadTapTimeFromLocalStorage(); // Load tapTime from local storage on component mount
   }, [userId]);
 
-    // Start the tapTime countdown when the component mounts
+     // Start the tapTime countdown when the component mounts
   useEffect(() => {
     if (tapTimeIntervalRef.current === null) {
       // Start the tapTime interval only if it's not already running
@@ -273,7 +273,7 @@ const Main = () => {
     // Clear the interval when the component unmounts
     return () => {
       clearInterval(tapTimeIntervalRef.current);
-      tapTimeIntervalRef.current = null; // Reset the interval ID
+      // Do not reset tapTimeIntervalRef.current here 
     };
   }, []); // This effect runs only once when the component mounts
 
@@ -300,7 +300,7 @@ const Main = () => {
       // Do not reset intervalRef.current here
     };
   }, [isClaimClicked]);
-  
+
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
       <div className="p-2 rounded-lg text-center w-full max-w-md">
