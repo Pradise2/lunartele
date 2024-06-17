@@ -10,28 +10,21 @@ const Boost = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (window.Telegram && window.Telegram.WebApp) {
-        const user = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (user) {
-          setUserId(user.id);
-          setUsername(user.username);
-          setFirstName(user.first_name);
-
-          // Automatically send data to Firebase
-          await handleSendData(user.id, user.username, user.first_name);
-        } else {
-          console.error('User data is not available.');
-        }
+    if (window.Telegram && window.Telegram.WebApp) {
+      const user = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (user) {
+        setUserId(user.id);
+        setUsername(user.username);
+        setFirstName(user.first_name);
       } else {
-        console.error('Telegram WebApp script is not loaded.');
+        console.error('User data is not available.');
       }
-    };
-
-    fetchUserData();
+    } else {
+      console.error('Telegram WebApp script is not loaded.');
+    }
   }, []);
 
-  const handleSendData = async (userId, username, firstname) => {
+  const handleSendData = async () => {
     if (!userId || !firstname) {
       console.error('User data is incomplete.');
       return;
@@ -44,7 +37,7 @@ const Boost = () => {
       const docRef = doc(db, 'telegram', String(userId)); // Assuming 'telegram' is your collection name
       await setDoc(docRef, {
         userId: userId,
-        username: username,
+        
         firstName: firstname,
         // ... add other relevant data
       });
@@ -63,6 +56,9 @@ const Boost = () => {
         <div>
           <p>ID: {userId}</p>
           <p>First Name: {firstname ? firstname : 'Loading...'}</p>
+          <button onClick={handleSendData} disabled={isLoading}>
+            {isLoading ? 'Sending...' : 'Send Data to Firebase'}
+          </button>
         </div>
       ) : (
         <p>Loading user data...</p>
