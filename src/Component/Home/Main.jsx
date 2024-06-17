@@ -38,6 +38,22 @@ const Main = () => {
 
   const loadUserData = async (userId) => {
     try {
+        // Try to load from local storage
+      const localStorageData = JSON.parse(localStorage.getItem(`userData-${userId}`));
+      if (localStorageData) {
+        setTapLeft(localStorageData.tapLeft);
+        setTapTime(localStorageData.tapTime);
+        setTaps(localStorageData.taps);
+        setFarmTime(localStorageData.farmTime);
+        setFarm(localStorageData.farm);
+        setFarmClaimed(localStorageData.farmClaimed);
+        setTotalBal(localStorageData.totalBal);
+        setUserExists(true);
+        console.log("Document data loaded from local storage:", localStorageData);
+        return; // Data loaded from local storage, stop here
+      }
+
+
       const docRef = doc(db, 'details', String(userId));
       const docSnap = await getDoc(docRef);
 
@@ -52,6 +68,10 @@ const Main = () => {
         setTotalBal(data.totalBal);
         setUserExists(true); // User exists
         console.log("Document data:", data);
+
+        // Save to local storage
+        localStorage.setItem(`userData-${userId}`, 
+          JSON.stringify(data));
       } else {
         console.log("No such document!");
         setUserExists(false); // User doesn't exist
@@ -99,6 +119,8 @@ const Main = () => {
     console.error("Error updating/creating document: ", error);
   }
 };
+
+
 
   useEffect(() => {
     if (userId && firstname) {
@@ -189,6 +211,21 @@ const Main = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
+
+   // Save data to local storage whenever state changes
+   useEffect(() => {
+    const userData = {
+      tapLeft: tapLeft,
+      tapTime: tapTime,
+      taps: taps,
+      farmTime: farmTime,
+      farm: farm,
+      farmClaimed: farmClaimed,
+      totalBal: totalBal
+    };
+    localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
+  }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]); 
+
 
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
