@@ -225,7 +225,24 @@ const Main = () => {
     };
     localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
   }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]); 
+   
+  // Save data to local storage whenever state changes
+   useEffect(() => {
+    const userData = {
+      tapLeft: tapLeft,
+      tapTime: tapTime,
+      taps: taps,
+      farmTime: farmTime,
+      farm: farm,
+      farmClaimed: farmClaimed,
+      totalBal: totalBal
+    };
+    localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
+  }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]); 
 
+  useEffect(() => {
+    loadFarmTimeFromLocalStorage(); // Load farmTime from local storage on component mount
+  }, [userId]); // This effect runs only when userId changes
 
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
