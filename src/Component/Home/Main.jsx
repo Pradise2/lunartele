@@ -234,7 +234,7 @@ const Main = () => {
         </p>
         <div className="p-2 flex justify-center space-x-4">
           <div className="bg-purple-800 p-2 rounded-lg flex">
-            <p>{tapLeft} tapLeft left</p>
+            <p>{tapLeft} tapLeft</p>
           </div>
           <div className="bg-yellow-800 p-2 rounded-lg flex items-center space-x-2">
             <span className="material-icons">access_time</span>
