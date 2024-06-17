@@ -37,7 +37,7 @@ const Boost = () => {
       const docRef = doc(db, 'telegram', String(userId)); // Assuming 'telegram' is your collection name
       await setDoc(docRef, {
         userId: userId,
-        username: username,
+        
         firstName: firstname,
         // ... add other relevant data
       });
@@ -56,7 +56,6 @@ const Boost = () => {
         <div>
           <p>ID: {userId}</p>
           <p>First Name: {firstname ? firstname : 'Loading...'}</p>
-          <p>Username: {username ? username : 'Loading...'}</p>
           <button onClick={handleSendData} disabled={isLoading}>
             {isLoading ? 'Sending...' : 'Send Data to Firebase'}
           </button>
