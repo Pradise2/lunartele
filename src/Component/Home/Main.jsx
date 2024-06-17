@@ -7,7 +7,7 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 const Main = () => {
   const [userId, setUserId] = useState(null);
   const [tapLeft, setTapLeft] = useState(10);
-  const [tapTime, setTapTime] = useState(2*60*60);
+  const [tapTime, setTapTime] = useState(4*60*60);
   const [taps, setTaps] = useState(0);
   const [farmTime, setFarmTime] = useState(6*60*60);
   const [farm, setFarm] = useState(0);
@@ -134,7 +134,7 @@ const Main = () => {
       setTapTime((prevtapTime) => {
         if (prevtapTime <= 0) {
           setTapLeft(10);
-          return 2*60*60;
+          return 4*60*60;
         }
         return prevtapTime - 1;
       });
@@ -146,6 +146,28 @@ const Main = () => {
   useEffect(() => {
     setTotalBal(taps + farmClaimed);
   }, [taps, farmClaimed]);
+
+  // Save tapTime and farmTime to local storage
+  useEffect(() => {
+    if (userId) {
+      localStorage.setItem(`timerData-${userId}`, JSON.stringify({
+        tapTime: tapTime,
+        farmTime: farmTime,
+      }));
+    }
+  }, [userId, tapTime, farmTime]);
+
+  // Load tapTime and farmTime from local storage on component mount
+  useEffect(() => {
+    if (userId) {
+      const storedTimerData = localStorage.getItem(`timerData-${userId}`);
+      if (storedTimerData) {
+        const data = JSON.parse(storedTimerData);
+        setTapTime(data.tapTime);
+        setFarmTime(data.farmTime);
+      }
+    }
+  }, [userId]);
 
   useEffect(() => {
     let intervalIdfarmTime;
@@ -226,8 +248,10 @@ const Main = () => {
       farmClaimed: farmClaimed,
       totalBal: totalBal
     };
-    localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
-  }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]); 
+    localStorage.setItem(`userData-${userId}`,
+       JSON.stringify(userData));
+  },
+   [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]); 
   
   // Function to load farmTime from local storage on component mount
   const loadFarmTimeFromLocalStorage = () => {
@@ -257,51 +281,51 @@ const Main = () => {
     loadTapTimeFromLocalStorage(); // Load tapTime from local storage on component mount
   }, [userId]);
 
-     // Start the tapTime countdown when the component mounts
+
   useEffect(() => {
     if (tapTimeIntervalRef.current === null) {
-      // Start the tapTime interval only if it's not already running
-      tapTimeIntervalRef.current = setInterval(() => {
+      const startTime = Date.now();
+      tapTimeIntervalRef.current = setTimeout(() => {
         setTapTime((prevTapTime) => {
           if (prevTapTime <= 0) {
             setTapLeft(10);
-            return 30;
+            return 4 * 60 * 60; // 4 hours in seconds
           }
           return prevTapTime - 1;
         });
-      }, 1000);
+        // Reschedule the timeout for the next interval
+        tapTimeIntervalRef.current = setTimeout(() => {
+          // ...
+        }, 1000);
+      }, 1000 - (Date.now() - startTime)); // Account for time spent processing
     }
-
-    // Clear the interval when the component unmounts
-    return () => {
-      clearInterval(tapTimeIntervalRef.current);
-      // Do not reset tapTimeIntervalRef.current here 
-    };
-  }, []); // This effect runs only once when the component mounts
-
-  // Start the farmTime countdown when the claim button is clicked
+  
+  }, []);
+  
   useEffect(() => {
     if (farmTimeIntervalRef.current === null && isClaimClicked) {
-      // Start the farmTime interval only if it's not already running
-      farmTimeIntervalRef.current = setInterval(() => {
+      const startTime = Date.now();
+      farmTimeIntervalRef.current = setTimeout(() => {
         setFarmTime((prevFarmTime) => {
           if (prevFarmTime <= 0) {
-            // Do not reset intervalRef.current here
             return 0; // Stop at 0
           } else {
             setFarm((prevFarm) => prevFarm + 0.01);
             return prevFarmTime - 1;
           }
         });
-      }, 1000);
+        // Reschedule the timeout for the next interval
+        farmTimeIntervalRef.current = setTimeout(() => {
+          // ...
+        }, 1000);
+      }, 1000 - (Date.now() - startTime)); // Account for time spent processing
     }
-
-    // Clear the interval when the component unmounts or when the claim button is clicked again
-    return () => {
-      clearInterval(farmTimeIntervalRef.current);
-      // Do not reset intervalRef.current here
-    };
   }, [isClaimClicked]);
+
+  // Handle Logout
+const handleLogout = () => {
+  localStorage.removeItem(`timerData-${userId}`); 
+};
 
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
