@@ -6,10 +6,10 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 const Main = () => {
   const [userId, setUserId] = useState(null);
-  const [tapLeft, setTapLeft] = useState(10);
+  const [tapLeft, setTapLeft] = useState(1000);
   const [tapTime, setTapTime] = useState(4*60*60);
   const [taps, setTaps] = useState(0);
-  const [farmTime, setFarmTime] = useState(10 * 60);
+  const [farmTime, setFarmTime] = useState(30);
   const [farm, setFarm] = useState(0);
   const [farmClaimed, setFarmClaimed] = useState(0);
   const [isClaimClicked, setIsClaimClicked] = useState(false);
@@ -74,6 +74,7 @@ const Main = () => {
         setTaps(data.taps);
         setFarmTime(Math.max(data.farmTime - farmElapsedTime, 0));
         setFarm(data.farm + (isFarmActive ? farmElapsedTime * 0.01 : 0));setFarmClaimed(data.farmClaimed);
+        setFarmClaimed(data.farmClaimed);
         setTotalBal(data.totalBal);
         setUserExists(true);
 
@@ -109,7 +110,7 @@ const Main = () => {
         farm: farm,
         farmClaimed: farmClaimed,
         lastLoginTime: currentTime,
-        farmStartTime: isClaimClicked ? currentTime : null,
+        farmStartTime:  isFarmActive ? currentTime : null,
       };
 
       if (userExists) {
@@ -130,13 +131,13 @@ const Main = () => {
     if (userId && firstname) {
       handleSendData();
     }
-  }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed, isClaimClicked]);
-
+  }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed, isFarmActive]);
+ 
   useEffect(() => {
     const intervalIdC2 = setInterval(() => {
       setTapTime((prevtapTime) => {
         if (prevtapTime <= 0) {
-          setTapLeft(10);
+          setTapLeft(1000);
           return 4*60*60;
         }
         return prevtapTime - 1;
@@ -183,7 +184,7 @@ const Main = () => {
     } else if (farmTime === 0) { // Check for claim condition
       setFarmClaimed(farmClaimed + farm);
       setFarm(0);
-      setFarmTime(10 * 60); 
+      setFarmTime(30); 
       setIsFarmActive(false);
       clearInterval(farmIntervalRef.current);
       
@@ -231,13 +232,11 @@ const Main = () => {
         farmClaimed: farmClaimed,
         totalBal: totalBal,
         lastLoginTime: new Date().getTime(),
-        farmStartTime: isClaimClicked ? new Date().getTime() : null,
+        farmStartTime: isFarmActive ? new Date().getTime() : null,
       };
       localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
     }
-  }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal, isClaimClicked]);
-
-
+  }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal, isFarmActive]);
 
 
   return (
