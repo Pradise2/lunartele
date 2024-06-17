@@ -17,6 +17,7 @@ const Main = () => {
   const [firstname, setFirstName] = useState(null);
   const [userExists, setUserExists] = useState(false);
   const farmIntervalRef = useRef(null);
+  const [isFarmActive, setIsFarmActive] = useState(false); // Track if the farm is active
 
   window.Telegram.WebApp.expand();
 
@@ -47,19 +48,18 @@ const Main = () => {
         setTapTime(Math.max(localStorageData.tapTime - elapsedTime, 0));
         setTaps(localStorageData.taps);
         setFarmTime(Math.max(localStorageData.farmTime - farmElapsedTime, 0));
-        setFarm(localStorageData.farm + (isClaimClicked ? farmElapsedTime * 0.01 : 0));
+        setFarm(localStorageData.farm + (isFarmActive ? farmElapsedTime * 0.01 : 0));
         setFarmClaimed(localStorageData.farmClaimed);
         setTotalBal(localStorageData.totalBal);
         setUserExists(true);
         console.log("Document data loaded from local storage:", localStorageData);
 
-        if (isClaimClicked && farmTime > 0) {
+        if (isFarmActive && farmTime > 0) {
           startFarmInterval();
         }
 
         return;
       }
-
       const docRef = doc(db, 'test', String(userId));
       const docSnap = await getDoc(docRef);
 
@@ -73,14 +73,13 @@ const Main = () => {
         setTapTime(Math.max(data.tapTime - elapsedTime, 0));
         setTaps(data.taps);
         setFarmTime(Math.max(data.farmTime - farmElapsedTime, 0));
-        setFarm(data.farm + (isClaimClicked ? farmElapsedTime * 0.01 : 0));
-        setFarmClaimed(data.farmClaimed);
+        setFarm(data.farm + (isFarmActive ? farmElapsedTime * 0.01 : 0));setFarmClaimed(data.farmClaimed);
         setTotalBal(data.totalBal);
         setUserExists(true);
 
         localStorage.setItem(`userData-${userId}`, JSON.stringify(data));
 
-        if (isClaimClicked && farmTime > 0) {
+        if (isFarmActive && farmTime > 0) {
           startFarmInterval();
         }
       } else {
@@ -90,7 +89,7 @@ const Main = () => {
       console.error("Error getting document:", error);
     }
   };
-
+  
   const handleSendData = async () => {
     if (!userId || !firstname) {
       console.error('User data is incomplete.');
@@ -156,6 +155,7 @@ const Main = () => {
       setFarmTime((prevfarmTime) => {
         if (prevfarmTime <= 0) {
           clearInterval(farmIntervalRef.current);
+          setIsFarmActive(false); // Stop the farm
           return 0;
         } else {
           setFarm((prevfarm) => prevfarm + 0.01);
@@ -172,15 +172,19 @@ const Main = () => {
     }
   };
 
+  
   const handleStartClick = () => {
-    if (!isClaimClicked) {
-      setIsClaimClicked(true);
-      startFarmInterval();
-    } else {
+    if (!isFarmActive) {
+      // Start the farm timer only if it's not already running
+      if (farmTime > 0) { 
+        setIsFarmActive(true);
+        startFarmInterval();
+      }
+    } else if (farmTime === 0) { // Check for claim condition
       setFarmClaimed(farmClaimed + farm);
       setFarm(0);
-      setFarmTime(40);
-      setIsClaimClicked(false);
+      setFarmTime(10 * 60); 
+      setIsFarmActive(false);
       clearInterval(farmIntervalRef.current);
     }
   };
@@ -229,6 +233,9 @@ const Main = () => {
       localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
     }
   }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal, isClaimClicked]);
+
+
+
 
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
