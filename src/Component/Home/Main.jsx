@@ -36,6 +36,10 @@ const Main = () => {
     }
   }, []);
 
+   // Use a useRef to store the interval IDs
+   const tapTimeIntervalRef = useRef(null);
+   const farmTimeIntervalRef = useRef(null);
+
   const loadUserData = async (userId) => {
     try {
         // Try to load from local storage
@@ -236,10 +240,71 @@ const Main = () => {
     }
   };
 
+   // Function to load tapTime from local storage on component mount
+   const loadTapTimeFromLocalStorage = () => {
+    if (userId) {
+      const storedData = JSON.parse(localStorage.getItem(`userData-${userId}`));
+      if (storedData && storedData.tapTime) {
+        setTapTime(storedData.tapTime);
+      }
+    }
+  };
+
   useEffect(() => {
     loadFarmTimeFromLocalStorage(); // Load farmTime from local storage on component mount
   }, [userId]); // This effect runs only when userId changes
 
+  useEffect(() => {
+    loadTapTimeFromLocalStorage(); // Load tapTime from local storage on component mount
+  }, [userId]);
+
+   // Start the tapTime countdown when the component mounts
+   useEffect(() => {
+    if (tapTimeIntervalRef.current === null) {
+      // Start the tapTime interval only if it's not already running
+      tapTimeIntervalRef.current = setInterval(() => {
+        setTapTime((prevTapTime) => {
+          if (prevTapTime <= 0) {
+            setTapLeft(10);
+            return 30;
+          }
+          return prevTapTime - 1;
+        });
+      }, 1000);
+    }
+
+    // Clear the interval when the component unmounts
+    return () => {
+      clearInterval(tapTimeIntervalRef.current);
+      tapTimeIntervalRef.current = null; // Reset the interval ID
+    };
+  }, []); // This effect runs only once when the component mounts
+
+  // Start the farmTime countdown when the claim button is clicked
+  useEffect(() => {
+    if (farmTimeIntervalRef.current === null && isClaimClicked) {
+      // Start the farmTime interval only if it's not already running
+      farmTimeIntervalRef.current = setInterval(() => {
+        setFarmTime((prevFarmTime) => {
+          if (prevFarmTime <= 0) {
+            clearInterval(farmTimeIntervalRef.current);
+            farmTimeIntervalRef.current = null; // Reset the interval ID
+            return 0; // Stop at 0
+          } else {
+            setFarm((prevFarm) => prevFarm + 0.01);
+            return prevFarmTime - 1;
+          }
+        });
+      }, 1000);
+    }
+
+    // Clear the interval when the component unmounts or when the claim button is clicked again
+    return () => {
+      clearInterval(farmTimeIntervalRef.current);
+      farmTimeIntervalRef.current = null; // Reset the interval ID
+    };
+  }, [isClaimClicked]);
+  
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
       <div className="p-2 rounded-lg text-center w-full max-w-md">
