@@ -19,7 +19,7 @@ const Boost = () => {
 
           try {
             // Set the document in Firestore
-            const docRef = doc(db, 'users', String(user.id)); // Assuming 'users' is your collection name
+            const docRef = doc(db, 'telegram', String(user.id)); // Assuming 'users' is your collection name
             await setDoc(docRef, {
               userId: user.id,
               username: user.username,
