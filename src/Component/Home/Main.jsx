@@ -41,11 +41,17 @@ const Main = () => {
       }
       try {
         // Set the document in Firestore
-        const docRef = doc(db, 'details', String(userId)); // Assuming 'telegram' is your collection name
+        const docRef = doc(db, 'details', String(userId)); // Assuming 'details' is your collection name
         await setDoc(docRef, {
           userId: userId,
           firstName: firstname,
-          // ... add other relevant data
+          totalBal: totalBal,
+          tapLeft: tapLeft,
+          tapTime: tapTime,
+          taps: taps,
+          farmTime: farmTime,
+          farm: farm,
+          farmClaimed: farmClaimed
         });
         console.log("Document successfully written!");
       } catch (error) {
@@ -55,7 +61,8 @@ const Main = () => {
     if (userId && firstname) {
       handleSendData();
     }
-  }, [userId, firstname]);
+  }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
+
 
   useEffect(() => {
     const intervalIdC2 = setInterval(() => {
