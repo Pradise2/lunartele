@@ -57,7 +57,6 @@ const Main = () => {
         return; // Data loaded from local storage, stop here
       }
 
-
       const docRef = doc(db, 'details', String(userId));
       const docSnap = await getDoc(docRef);
 
@@ -123,8 +122,6 @@ const Main = () => {
     console.error("Error updating/creating document: ", error);
   }
 };
-
-
 
   useEffect(() => {
     if (userId && firstname) {
@@ -258,8 +255,8 @@ const Main = () => {
     loadTapTimeFromLocalStorage(); // Load tapTime from local storage on component mount
   }, [userId]);
 
-   // Start the tapTime countdown when the component mounts
-   useEffect(() => {
+    // Start the tapTime countdown when the component mounts
+  useEffect(() => {
     if (tapTimeIntervalRef.current === null) {
       // Start the tapTime interval only if it's not already running
       tapTimeIntervalRef.current = setInterval(() => {
@@ -287,8 +284,7 @@ const Main = () => {
       farmTimeIntervalRef.current = setInterval(() => {
         setFarmTime((prevFarmTime) => {
           if (prevFarmTime <= 0) {
-            clearInterval(farmTimeIntervalRef.current);
-            farmTimeIntervalRef.current = null; // Reset the interval ID
+            // Do not reset intervalRef.current here
             return 0; // Stop at 0
           } else {
             setFarm((prevFarm) => prevFarm + 0.01);
@@ -301,10 +297,10 @@ const Main = () => {
     // Clear the interval when the component unmounts or when the claim button is clicked again
     return () => {
       clearInterval(farmTimeIntervalRef.current);
-      farmTimeIntervalRef.current = null; // Reset the interval ID
+      // Do not reset intervalRef.current here
     };
   }, [isClaimClicked]);
-
+  
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
       <div className="p-2 rounded-lg text-center w-full max-w-md">
