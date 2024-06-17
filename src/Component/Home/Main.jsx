@@ -25,6 +25,8 @@ const Main = () => {
       if (user) {
         setUserId(user.id);
         setFirstName(user.first_name);
+        // Load data from Firestore
+        loadUserData(user.id);
       } else {
         console.error('User data is not available.');
       }
@@ -32,6 +34,29 @@ const Main = () => {
       console.error('Telegram WebApp script is not loaded.');
     }
   }, []);
+
+  const loadUserData = async (userId) => {
+    try {
+      const docRef = doc(db, 'details', String(userId));
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setTapLeft(data.tapLeft);
+        setTapTime(data.tapTime);
+        setTaps(data.taps);
+        setFarmTime(data.farmTime);
+        setFarm(data.farm);
+        setFarmClaimed(data.farmClaimed);
+        setTotalBal(data.totalBal);
+        console.log("Document data:", data);
+      } else {
+        console.log("No such document!");
+      }
+    } catch (error) {
+      console.error("Error getting document:", error);
+    }
+  };
 
   useEffect(() => {
     const handleSendData = async () => {
