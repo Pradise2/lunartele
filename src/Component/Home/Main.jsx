@@ -153,7 +153,7 @@ const Main = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       handleSendData();
-    }, 5000); // Save data every 5 seconds
+    }, 1000); // Save data every 1 seconds
 
     return () => clearInterval(intervalId);
   }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
