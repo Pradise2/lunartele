@@ -53,14 +53,9 @@ Bring them all into the game\\.
 
 
     // Store User Data in Firestore
-    const userDataRef = doc(db, 'users', String(userId));
-    await setDoc(userDataRef, {
-        userId: userId,
-        userName: userName,
-        isBot: isBot,
-        urlSent: urlSent,
+    
         
-    });
+
 });
 
 
