@@ -14,19 +14,22 @@ const Boost = () => {
     if (window.Telegram && window.Telegram.WebApp) {
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       if (user) {
-        const userIdFromTelegram = user?.id;
-        console.log('User ID:', userIdFromTelegram);
-        setUserId(userIdFromTelegram);
-
+        setUserId(user?.id);
         // Set username to state
-        const usernameFromTelegram = user.username;
-        console.log('Username:', usernameFromTelegram);
-        setUsername(usernameFromTelegram);
-
+        setUsername(user.username);
          // Set firstname to state
-         const firstnameFromTelegram = user.first_name;
-         console.log('Username:', firstnameFromTelegram);
-         setFirstName(usernameFromTelegram);
+         setFirstName(user.first_name);
+
+ // Now, we can use the user data to set docs
+        const docData = {
+          userId: userId,
+          username: username,
+          firstName: firstname,
+          // ... add other relevant data
+        };
+
+        // Assuming you have a function to set your document
+        setDoc(docData); 
 
       } else {
         console.error('User data is not available.');
