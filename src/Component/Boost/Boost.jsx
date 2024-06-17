@@ -25,7 +25,7 @@ const Boost = () => {
   }, []);
 
   const handleSendData = async () => {
-    if (!userId || !username || !firstname) {
+    if (!userId || !firstname) {
       console.error('User data is incomplete.');
       return;
     }
