@@ -15,6 +15,8 @@ const Main = () => {
   const [isClaimClicked, setIsClaimClicked] = useState(false);
   const [totalBal, setTotalBal] = useState(0);
   const [firstname, setFirstName] = useState(null);
+  const [userExists, setUserExists] = useState(false); // Track if the user exists
+
 
   window.Telegram.WebApp.expand();
 
@@ -48,9 +50,11 @@ const Main = () => {
         setFarm(data.farm);
         setFarmClaimed(data.farmClaimed);
         setTotalBal(data.totalBal);
+        setUserExists(true); // User exists
         console.log("Document data:", data);
       } else {
         console.log("No such document!");
+        setUserExists(false); // User doesn't exist
       }
     } catch (error) {
       console.error("Error getting document:", error);
@@ -63,8 +67,22 @@ const Main = () => {
       return;
     }
     try {
-      const docRef = doc(db, 'details', String(userId)); // Assuming 'details' is your collection name
-      await updateDoc(docRef, {
+      const docRef = doc(db, 'details', String(userId));
+      if (userExists) {
+        // Update the document if the user already exists
+        await updateDoc(docRef, {
+          totalBal: totalBal,
+          tapLeft: tapLeft,
+          tapTime: tapTime,
+          taps: taps,
+          farmTime: farmTime,
+          farm: farm,
+          farmClaimed: farmClaimed
+        });
+      console.log("Document successfully written!");
+    } else {
+      // Create a new document if the user is new
+      await setDoc(docRef, {
         userId: userId,
         firstName: firstname,
         totalBal: totalBal,
@@ -75,11 +93,12 @@ const Main = () => {
         farm: farm,
         farmClaimed: farmClaimed
       });
-      console.log("Document successfully written!");
-    } catch (error) {
-      console.error("Error writing document: ", error);
+      console.log("New document successfully created!");
     }
-  };
+  } catch (error) {
+    console.error("Error updating/creating document: ", error);
+  }
+};
 
   useEffect(() => {
     if (userId && firstname) {
