@@ -1,5 +1,5 @@
 import tapps from '../../assets/tapps.png';
-import React, { useState, useEffect, useRef  } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Footer from '../Others/Footer';
 import { db } from '../../firebase'; 
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
@@ -15,8 +15,7 @@ const Main = () => {
   const [isClaimClicked, setIsClaimClicked] = useState(false);
   const [totalBal, setTotalBal] = useState(0);
   const [firstname, setFirstName] = useState(null);
-  const [userExists, setUserExists] = useState(false); // Track if the user exists
-
+  const [userExists, setUserExists] = useState(false);
 
   window.Telegram.WebApp.expand();
 
@@ -26,7 +25,6 @@ const Main = () => {
       if (user) {
         setUserId(user.id);
         setFirstName(user.first_name);
-        // Load data from Firestore
         loadUserData(user.id);
       } else {
         console.error('User data is not available.');
@@ -36,25 +34,23 @@ const Main = () => {
     }
   }, []);
 
-   // Use a useRef to store the interval IDs
-   const tapTimeIntervalRef = useRef(null);
-   const farmTimeIntervalRef = useRef(null);
-
   const loadUserData = async (userId) => {
     try {
-        // Try to load from local storage
       const localStorageData = JSON.parse(localStorage.getItem(`userData-${userId}`));
       if (localStorageData) {
+        const currentTime = new Date().getTime();
+        const elapsedTime = Math.floor((currentTime - localStorageData.lastLoginTime) / 1000);
+
         setTapLeft(localStorageData.tapLeft);
-        setTapTime(localStorageData.tapTime);
+        setTapTime(Math.max(localStorageData.tapTime - elapsedTime, 0));
         setTaps(localStorageData.taps);
-        setFarmTime(localStorageData.farmTime);
+        setFarmTime(Math.max(localStorageData.farmTime - elapsedTime, 0));
         setFarm(localStorageData.farm);
         setFarmClaimed(localStorageData.farmClaimed);
         setTotalBal(localStorageData.totalBal);
         setUserExists(true);
         console.log("Document data loaded from local storage:", localStorageData);
-        return; // Data loaded from local storage, stop here
+        return;
       }
 
       const docRef = doc(db, 'details', String(userId));
@@ -62,22 +58,22 @@ const Main = () => {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
+        const currentTime = new Date().getTime();
+        const elapsedTime = Math.floor((currentTime - data.lastLoginTime) / 1000);
+
         setTapLeft(data.tapLeft);
-        setTapTime(data.tapTime);
+        setTapTime(Math.max(data.tapTime - elapsedTime, 0));
         setTaps(data.taps);
-        setFarmTime(data.farmTime);
+        setFarmTime(Math.max(data.farmTime - elapsedTime, 0));
         setFarm(data.farm);
         setFarmClaimed(data.farmClaimed);
         setTotalBal(data.totalBal);
-        setUserExists(true); // User exists
-        console.log("Document data:", data);
+        setUserExists(true);
 
-        // Save to local storage
         localStorage.setItem(`userData-${userId}`, 
           JSON.stringify(data));
       } else {
-        console.log("No such document!");
-        setUserExists(false); // User doesn't exist
+        setUserExists(false);
       }
     } catch (error) {
       console.error("Error getting document:", error);
@@ -91,21 +87,8 @@ const Main = () => {
     }
     try {
       const docRef = doc(db, 'details', String(userId));
-      if (userExists) {
-        // Update the document if the user already exists
-        await updateDoc(docRef, {
-          totalBal: totalBal,
-          tapLeft: tapLeft,
-          tapTime: tapTime,
-          taps: taps,
-          farmTime: farmTime,
-          farm: farm,
-          farmClaimed: farmClaimed
-        });
-      console.log("Document successfully written!");
-    } else {
-      // Create a new document if the user is new
-      await setDoc(docRef, {
+      const currentTime = new Date().getTime();
+      const data = {
         userId: userId,
         firstName: firstname,
         totalBal: totalBal,
@@ -114,14 +97,23 @@ const Main = () => {
         taps: taps,
         farmTime: farmTime,
         farm: farm,
-        farmClaimed: farmClaimed
-      });
-      console.log("New document successfully created!");
+        farmClaimed: farmClaimed,
+        lastLoginTime: currentTime,
+      };
+
+      if (userExists) {
+        await updateDoc(docRef, data);
+        console.log("Document successfully written!");
+      } else {
+        await setDoc(docRef, data);
+        console.log("New document successfully created!");
+      }
+
+      localStorage.setItem(`userData-${userId}`, JSON.stringify(data));
+    } catch (error) {
+      console.error("Error updating/creating document: ", error);
     }
-  } catch (error) {
-    console.error("Error updating/creating document: ", error);
-  }
-};
+  };
 
   useEffect(() => {
     if (userId && firstname) {
@@ -147,28 +139,6 @@ const Main = () => {
     setTotalBal(taps + farmClaimed);
   }, [taps, farmClaimed]);
 
-  // Save tapTime and farmTime to local storage
-  useEffect(() => {
-    if (userId) {
-      localStorage.setItem(`timerData-${userId}`, JSON.stringify({
-        tapTime: tapTime,
-        farmTime: farmTime,
-      }));
-    }
-  }, [userId, tapTime, farmTime]);
-
-  // Load tapTime and farmTime from local storage on component mount
-  useEffect(() => {
-    if (userId) {
-      const storedTimerData = localStorage.getItem(`timerData-${userId}`);
-      if (storedTimerData) {
-        const data = JSON.parse(storedTimerData);
-        setTapTime(data.tapTime);
-        setFarmTime(data.farmTime);
-      }
-    }
-  }, [userId]);
-
   useEffect(() => {
     let intervalIdfarmTime;
     if (isClaimClicked) {
@@ -176,7 +146,7 @@ const Main = () => {
         setFarmTime((prevfarmTime) => {
           if (prevfarmTime <= 0) {
             clearInterval(intervalIdfarmTime);
-            return 0; // Stop at 0
+            return 0;
           } else {
             setFarm((prevfarm) => prevfarm + 0.01);
             return prevfarmTime - 1;
@@ -197,34 +167,31 @@ const Main = () => {
 
   const handleStartClick = () => {
     if (!isClaimClicked) {
-      setIsClaimClicked(true); // Start the tapTime
+      setIsClaimClicked(true);
     } else {
       setFarmClaimed(farmClaimed + farm);
       setFarm(0);
       setFarmTime(6*60*60);
-      setIsClaimClicked(false); // Reset the tapTime
+      setIsClaimClicked(false);
     }
   };
 
   const formatTime = (time) => {
-    const hours = Math.floor(time / 3600); // 3600 seconds in an hour
-    const minutes = Math.floor((time % 3600) / 60); // 60 seconds in a minute
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
     const seconds = Math.floor(time % 60);
-    // Format the time string
     const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     return formattedTime;
   };
 
-  // Save data periodically
   useEffect(() => {
     const intervalId = setInterval(() => {
       handleSendData();
-    }, 1000); // Save data every 1 seconds
+    }, 1000);
 
     return () => clearInterval(intervalId);
   }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
 
-  // Save data before the user leaves the page
   useEffect(() => {
     const handleBeforeUnload = () => {
       handleSendData();
@@ -237,92 +204,22 @@ const Main = () => {
     };
   }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
 
-   // Save data to local storage whenever state changes
-   useEffect(() => {
-    const userData = {
-      tapLeft: tapLeft,
-      tapTime: tapTime,
-      taps: taps,
-      farmTime: farmTime,
-      farm: farm,
-      farmClaimed: farmClaimed,
-      totalBal: totalBal
-    };
-    localStorage.setItem(`userData-${userId}`,
-       JSON.stringify(userData));
-  },
-   [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]); 
-  
-  // Function to load farmTime from local storage on component mount
-  const loadFarmTimeFromLocalStorage = () => {
+  useEffect(() => {
     if (userId) {
-      const storedData = JSON.parse(localStorage.getItem(`userData-${userId}`));
-      if (storedData && storedData.farmTime) {
-        setFarmTime(storedData.farmTime);
-      }
+      const userData = {
+        tapLeft: tapLeft,
+        tapTime: tapTime,
+        taps: taps,
+        farmTime: farmTime,
+        farm: farm,
+        farmClaimed: farmClaimed,
+        totalBal: totalBal,
+        lastLoginTime: new Date().getTime(),
+      };
+      localStorage.setItem(`userData-${userId}`, JSON.stringify(userData));
     }
-  };
+  }, [tapLeft, tapTime, taps, farmTime, farm, farmClaimed, totalBal]);
 
-   // Function to load tapTime from local storage on component mount
-   const loadTapTimeFromLocalStorage = () => {
-    if (userId) {
-      const storedData = JSON.parse(localStorage.getItem(`userData-${userId}`));
-      if (storedData && storedData.tapTime) {
-        setTapTime(storedData.tapTime);
-      }
-    }
-  };
-
-  useEffect(() => {
-    loadFarmTimeFromLocalStorage(); // Load farmTime from local storage on component mount
-  }, [userId]); // This effect runs only when userId changes
-
-  useEffect(() => {
-    loadTapTimeFromLocalStorage(); // Load tapTime from local storage on component mount
-  }, [userId]);
-
-
-  useEffect(() => {
-    if (tapTimeIntervalRef.current === null) {
-      const startTime = Date.now();
-      tapTimeIntervalRef.current = setTimeout(() => {
-        setTapTime((prevTapTime) => {
-          if (prevTapTime <= 0) {
-            setTapLeft(10);
-            return 4 * 60 * 60; // 4 hours in seconds
-          }
-          return prevTapTime - 1;
-        });
-        // Reschedule the timeout for the next interval
-        tapTimeIntervalRef.current = setTimeout(() => {
-          // ...
-        }, 1000);
-      }, 1000 - (Date.now() - startTime)); // Account for time spent processing
-    }
-  
-  }, []);
-  
-  useEffect(() => {
-    if (farmTimeIntervalRef.current === null && isClaimClicked) {
-      const startTime = Date.now();
-      farmTimeIntervalRef.current = setTimeout(() => {
-        setFarmTime((prevFarmTime) => {
-          if (prevFarmTime <= 0) {
-            return 0; // Stop at 0
-          } else {
-            setFarm((prevFarm) => prevFarm + 0.01);
-            return prevFarmTime - 1;
-          }
-        });
-        // Reschedule the timeout for the next interval
-        farmTimeIntervalRef.current = setTimeout(() => {
-          // ...
-        }, 1000);
-      }, 1000 - (Date.now() - startTime)); // Account for time spent processing
-    }
-  }, [isClaimClicked]);
-
-  
 
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
