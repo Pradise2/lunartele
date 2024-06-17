@@ -7,9 +7,9 @@ import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 const Main = () => {
   const [userId, setUserId] = useState(null);
   const [tapLeft, setTapLeft] = useState(10);
-  const [tapTime, setTapTime] = useState(30);
+  const [tapTime, setTapTime] = useState(2*60*60);
   const [taps, setTaps] = useState(0);
-  const [farmTime, setFarmTime] = useState(60);
+  const [farmTime, setFarmTime] = useState(6*60*60);
   const [farm, setFarm] = useState(0);
   const [farmClaimed, setFarmClaimed] = useState(0);
   const [isClaimClicked, setIsClaimClicked] = useState(false);
@@ -134,7 +134,7 @@ const Main = () => {
       setTapTime((prevtapTime) => {
         if (prevtapTime <= 0) {
           setTapLeft(10);
-          return 30;
+          return 2*60*60;
         }
         return prevtapTime - 1;
       });
@@ -185,10 +185,12 @@ const Main = () => {
   };
 
   const formatTime = (time) => {
-    if (time <= 0) return "00:00";
-    const minutes = String(Math.floor(time / 60)).padStart(2, "0");
-    const seconds = String(time % 60).padStart(2, "0");
-    return `${minutes}:${seconds}`;
+    const hours = Math.floor(time / 3600); // 3600 seconds in an hour
+    const minutes = Math.floor((time % 3600) / 60); // 60 seconds in a minute
+    const seconds = Math.floor(time % 60);
+    // Format the time string
+    const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return formattedTime;
   };
 
   // Save data periodically
