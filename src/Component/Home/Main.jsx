@@ -36,7 +36,9 @@ const Main = () => {
     }
   }, []);
 
-
+   // Use a useRef to store the interval IDs
+   const tapTimeIntervalRef = useRef(null);
+   const farmTimeIntervalRef = useRef(null);
 
   const loadUserData = async (userId) => {
     try {
