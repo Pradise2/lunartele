@@ -6,13 +6,16 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const Main = () => {
   const [userId, setUserId] = useState(null);
-  const [count, setCount] = useState(10);
-  const [timer, setTimer] = useState(30);
-  const [c4Count, setC4Count] = useState(0);
-  const [d1, setD1] = useState(60);
-  const [d2, setD2] = useState(0);
-  const [d2Claimed, setD2Claimed] = useState(0);
+  const [tapLeft, setTapLeft] = useState(10);
+  const [tapTime, setTapTime] = useState(30);
+  const [taps, setTaps] = useState(0);
+  const [farmTime, setFarmTime] = useState(60);
+  const [farm, setFarm] = useState(0);
+  const [farmClaimed, setFarmClaimed] = useState(0);
   const [isClaimClicked, setIsClaimClicked] = useState(false);
+  const [totalBal, setTotalBal] = useState(0);
+  const [firstname, setFirstName] = useState(null);
+  
 
   window.Telegram.WebApp.expand();
 
@@ -20,9 +23,8 @@ const Main = () => {
     if (window.Telegram && window.Telegram.WebApp) {
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       if (user) {
-        const userIdFromTelegram = user?.id;
-        console.log('User ID:', userIdFromTelegram);
-        setUserId(userIdFromTelegram);
+        setUserId(user.id);
+        setFirstName(user.first_name);
       } else {
         console.error('User data is not available.');
       }
@@ -32,13 +34,37 @@ const Main = () => {
   }, []);
 
   useEffect(() => {
+    const handleSendData = async () => {
+      if (!userId || !firstname) {
+        console.error('User data is incomplete.');
+        return;
+      }
+      try {
+        // Set the document in Firestore
+        const docRef = doc(db, 'telegram', String(userId)); // Assuming 'telegram' is your collection name
+        await setDoc(docRef, {
+          userId: userId,
+          firstName: firstname,
+          // ... add other relevant data
+        });
+        console.log("Document successfully written!");
+      } catch (error) {
+        console.error("Error writing document: ", error);
+      }
+    };
+    if (userId && firstname) {
+      handleSendData();
+    }
+  }, [userId, firstname]);
+
+  useEffect(() => {
     const intervalIdC2 = setInterval(() => {
-      setTimer((prevTimer) => {
-        if (prevTimer <= 0) {
-          setCount(10);
+      setTapTime((prevtapTime) => {
+        if (prevtapTime <= 0) {
+          setTapLeft(10);
           return 30;
         }
-        return prevTimer - 1;
+        return prevtapTime - 1;
       });
     }, 1000);
 
@@ -46,39 +72,43 @@ const Main = () => {
   }, []);
 
   useEffect(() => {
-    let intervalIdD1;
+    setTotalBal(taps + farmClaimed);
+  }, [taps, farmClaimed]);
+
+  useEffect(() => {
+    let intervalIdfarmTime;
     if (isClaimClicked) {
-      intervalIdD1 = setInterval(() => {
-        setD1((prevD1) => {
-          if (prevD1 <= 0) {
-            clearInterval(intervalIdD1);
+      intervalIdfarmTime = setInterval(() => {
+        setFarmTime((prevfarmTime) => {
+          if (prevfarmTime <= 0) {
+            clearInterval(intervalIdfarmTime);
             return 0; // Stop at 0
           } else {
-            setD2((prevD2) => prevD2 + 0.01);
-            return prevD1 - 1;
+            setFarm((prevfarm) => prevfarm + 0.01);
+            return prevfarmTime - 1;
           }
         });
       }, 1000);
     }
 
-    return () => clearInterval(intervalIdD1);
+    return () => clearInterval(intervalIdfarmTime);
   }, [isClaimClicked]);
 
   const handleClickC3 = () => {
-    if (count > 0) {
-      setCount(count - 1);
-      setC4Count(c4Count + 1);
+    if (tapLeft > 0) {
+      setTapLeft(tapLeft - 1);
+      setTaps(taps + 1);
     }
   };
 
   const handleStartClick = () => {
     if (!isClaimClicked) {
-      setIsClaimClicked(true); // Start the timer
+      setIsClaimClicked(true); // Start the tapTime
     } else {
-      setD2Claimed(d2Claimed + d2);
-      setD2(0);
-      setD1(60);
-      setIsClaimClicked(false); // Reset the timer
+      setFarmClaimed(farmClaimed + farm);
+      setFarm(0);
+      setFarmTime(60);
+      setIsClaimClicked(false); // Reset the tapTime
     }
   };
 
@@ -88,28 +118,26 @@ const Main = () => {
     const seconds = String(time % 60).padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
-
-
   
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
       <div className="p-2 rounded-lg text-center w-full max-w-md">
         <p className="p-2 text-zinc-400 font-bold">Lunar Token</p>
         <p className="text-4xl font-bold">
-          {(c4Count + d2Claimed).toFixed(2)} <span className="text-purple-400">lunar</span>
+          {(totalBal).toFixed(2)} <span className="text-purple-400">lunar</span>
         </p>
       </div>
       <div className="text-center space-y-2">
         <p className="text-zinc-400">
-          Wont stop! Timer shows refill, {userId ? `${userId} ` : ''} but the fun won’t flop! <span className="text-yellow-400">👍</span>
+          Wont stop! tapTime shows refill, {userId ? `${userId} ` : ''} but the fun won’t flop! <span className="text-yellow-400">👍</span>
         </p>
         <div className="p-2 flex justify-center space-x-4">
           <div className="bg-purple-800 p-2 rounded-lg flex">
-            <p>{count} taps left</p>
+            <p>{tapLeft} tapLeft left</p>
           </div>
           <div className="bg-yellow-800 p-2 rounded-lg flex items-center space-x-2">
             <span className="material-icons">access_time</span>
-            <p>{formatTime(timer)}</p>
+            <p>{formatTime(tapTime)}</p>
           </div>
         </div>
       </div>
@@ -127,17 +155,17 @@ const Main = () => {
         <div className="flex justify-center mt-6">
           <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-center py-2 px-4 rounded-lg mr-4 flex justify-center mt-3">
             <span className="material-icons">access_time</span>
-            <p className="text-center font-bold">{formatTime(d1)}</p>
+            <p className="text-center font-bold">{formatTime(farmTime)}</p>
           </div>
           <p className="text-center text-4xl font-bold mt-2">
-            {d2.toFixed(2)} <span className="text-purple-400">lunar</span>
+            {farm.toFixed(2)} <span className="text-purple-400">lunar</span>
           </p>
-        </div>
+        </div>/
       </div>
       <button
         className="mt-6 bg-zinc-700 text-white py-2 px-6 rounded-lg"
         onClick={handleStartClick}
-        disabled={isClaimClicked && d1 > 0}
+        disabled={isClaimClicked && farmTime > 0}
       >
         {isClaimClicked ? "Claim" : "Start"}
       </button>

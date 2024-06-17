@@ -5,16 +5,13 @@ import { db } from '../../firebase'; // Assuming you have your Firebase config s
 
 const Boost = () => {
   const [userId, setUserId] = useState(null);
-  const [username, setUsername] = useState(null);
   const [firstname, setFirstName] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       if (user) {
         setUserId(user.id);
-        setUsername(user.username);
         setFirstName(user.first_name);
       } else {
         console.error('User data is not available.');
@@ -24,30 +21,31 @@ const Boost = () => {
     }
   }, []);
 
-  const handleSendData = async () => {
-    if (!userId || !firstname) {
-      console.error('User data is incomplete.');
-      return;
-    }
+  useEffect(() => {
+    const handleSendData = async () => {
+      if (!userId || !firstname) {
+        console.error('User data is incomplete.');
+        return;
+      }
 
-    setIsLoading(true);
+      try {
+        // Set the document in Firestore
+        const docRef = doc(db, 'telegram', String(userId)); // Assuming 'telegram' is your collection name
+        await setDoc(docRef, {
+          userId: userId,
+          firstName: firstname,
+          // ... add other relevant data
+        });
+        console.log("Document successfully written!");
+      } catch (error) {
+        console.error("Error writing document: ", error);
+      }
+    };
 
-    try {
-      // Set the document in Firestore
-      const docRef = doc(db, 'telegram', String(userId)); // Assuming 'telegram' is your collection name
-      await setDoc(docRef, {
-        userId: userId,
-        
-        firstName: firstname,
-        // ... add other relevant data
-      });
-      console.log("Document successfully written!");
-    } catch (error) {
-      console.error("Error writing document: ", error);
-    } finally {
-      setIsLoading(false);
+    if (userId && firstname) {
+      handleSendData();
     }
-  };
+  }, [userId, firstname]);
 
   return (
     <>
@@ -56,9 +54,6 @@ const Boost = () => {
         <div>
           <p>ID: {userId}</p>
           <p>First Name: {firstname ? firstname : 'Loading...'}</p>
-          <button onClick={handleSendData} disabled={isLoading}>
-            {isLoading ? 'Sending...' : 'Send Data to Firebase'}
-          </button>
         </div>
       ) : (
         <p>Loading user data...</p>
