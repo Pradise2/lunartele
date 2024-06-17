@@ -41,7 +41,7 @@ const Main = () => {
       }
       try {
         // Set the document in Firestore
-        const docRef = doc(db, 'telegram', String(userId)); // Assuming 'telegram' is your collection name
+        const docRef = doc(db, 'details', String(userId)); // Assuming 'telegram' is your collection name
         await setDoc(docRef, {
           userId: userId,
           firstName: firstname,
