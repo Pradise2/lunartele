@@ -9,7 +9,7 @@ const Main = () => {
   const [tapLeft, setTapLeft] = useState(10);
   const [tapTime, setTapTime] = useState(4*60*60);
   const [taps, setTaps] = useState(0);
-  const [farmTime, setFarmTime] = useState(40);
+  const [farmTime, setFarmTime] = useState(10 * 60);
   const [farm, setFarm] = useState(0);
   const [farmClaimed, setFarmClaimed] = useState(0);
   const [isClaimClicked, setIsClaimClicked] = useState(false);
@@ -186,7 +186,6 @@ const Main = () => {
       setFarmTime(10 * 60); 
       setIsFarmActive(false);
       clearInterval(farmIntervalRef.current);
-
       
     // Update totalBal when claim is clicked
     setTotalBal(totalBal + farm);  
