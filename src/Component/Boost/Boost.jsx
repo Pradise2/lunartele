@@ -19,9 +19,9 @@ const Boost = () => {
 
           try {
             // Set the document in Firestore
-            const docRef = doc(db, 'telegram', String(user.id)); // Assuming 'users' is your collection name
+            const docRef = doc(db, 'telegram', String(user?.id)); // Assuming 'users' is your collection name
             await setDoc(docRef, {
-              userId: user.id,
+              userId: user?.id,
               username: user.username,
               firstName: user.first_name,
               // ... add other relevant data
@@ -43,7 +43,7 @@ const Boost = () => {
 
   return (
     <>
-      <h1>Telegram User Data</h1>
+      <h1>Telegram Use Data</h1>
       {userId !== null ? (
         <div>
           <p>ID: {userId ? `${userId}` : ''}</p>
