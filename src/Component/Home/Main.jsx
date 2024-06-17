@@ -89,7 +89,7 @@ const Main = () => {
       console.error("Error getting document:", error);
     }
   };
-  
+
   const handleSendData = async () => {
     if (!userId || !firstname) {
       console.error('User data is incomplete.');
@@ -186,6 +186,10 @@ const Main = () => {
       setFarmTime(10 * 60); 
       setIsFarmActive(false);
       clearInterval(farmIntervalRef.current);
+
+      
+    // Update totalBal when claim is clicked
+    setTotalBal(totalBal + farm);  
     }
   };
 
@@ -283,9 +287,9 @@ const Main = () => {
       <button
         className="mt-6 bg-zinc-700 text-white py-2 px-6 rounded-lg"
         onClick={handleStartClick}
-        disabled={isClaimClicked && farmTime > 0}
+        disabled={isFarmActive && farmTime > 0} // Changed disable condition
       >
-        {isClaimClicked ? "Claim" : "Start"}
+        {isFarmActive && farmTime === 0 ? "Claim" : "Start"} 
       </button>
       <Footer/>
     </div>
