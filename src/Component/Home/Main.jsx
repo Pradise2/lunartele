@@ -97,7 +97,7 @@ const Main = () => {
       return;
     }
     try {
-      const docRef = doc(db, 'details', String(userId));
+      const docRef = doc(db, 'test', String(userId));
       const currentTime = new Date().getTime();
       const data = {
         userId: userId,
