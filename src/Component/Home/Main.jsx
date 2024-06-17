@@ -2,7 +2,7 @@ import tapps from '../../assets/tapps.png';
 import React, { useState, useEffect } from "react";
 import Footer from '../Others/Footer';
 import { db } from '../../firebase'; 
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 const Main = () => {
   const [userId, setUserId] = useState(null);
@@ -64,7 +64,7 @@ const Main = () => {
     }
     try {
       const docRef = doc(db, 'details', String(userId)); // Assuming 'details' is your collection name
-      await setDoc(docRef, {
+      await updateDoc(docRef, {
         userId: userId,
         firstName: firstname,
         totalBal: totalBal,
