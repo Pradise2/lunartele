@@ -15,7 +15,6 @@ const Main = () => {
   const [isClaimClicked, setIsClaimClicked] = useState(false);
   const [totalBal, setTotalBal] = useState(0);
   const [firstname, setFirstName] = useState(null);
-  
 
   window.Telegram.WebApp.expand();
 
@@ -58,36 +57,35 @@ const Main = () => {
     }
   };
 
+  const handleSendData = async () => {
+    if (!userId || !firstname) {
+      console.error('User data is incomplete.');
+      return;
+    }
+    try {
+      const docRef = doc(db, 'details', String(userId)); // Assuming 'details' is your collection name
+      await setDoc(docRef, {
+        userId: userId,
+        firstName: firstname,
+        totalBal: totalBal,
+        tapLeft: tapLeft,
+        tapTime: tapTime,
+        taps: taps,
+        farmTime: farmTime,
+        farm: farm,
+        farmClaimed: farmClaimed
+      });
+      console.log("Document successfully written!");
+    } catch (error) {
+      console.error("Error writing document: ", error);
+    }
+  };
+
   useEffect(() => {
-    const handleSendData = async () => {
-      if (!userId || !firstname) {
-        console.error('User data is incomplete.');
-        return;
-      }
-      try {
-        // Set the document in Firestore
-        const docRef = doc(db, 'details', String(userId)); // Assuming 'details' is your collection name
-        await setDoc(docRef, {
-          userId: userId,
-          firstName: firstname,
-          totalBal: totalBal,
-          tapLeft: tapLeft,
-          tapTime: tapTime,
-          taps: taps,
-          farmTime: farmTime,
-          farm: farm,
-          farmClaimed: farmClaimed
-        });
-        console.log("Document successfully written!");
-      } catch (error) {
-        console.error("Error writing document: ", error);
-      }
-    };
     if (userId && firstname) {
       handleSendData();
     }
   }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
-
 
   useEffect(() => {
     const intervalIdC2 = setInterval(() => {
@@ -150,7 +148,29 @@ const Main = () => {
     const seconds = String(time % 60).padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
-  
+
+  // Save data periodically
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      handleSendData();
+    }, 5000); // Save data every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
+
+  // Save data before the user leaves the page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      handleSendData();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [userId, firstname, totalBal, tapLeft, tapTime, taps, farmTime, farm, farmClaimed]);
+
   return (
     <div className="max-h-screen bg-zinc-900 text-white flex flex-col items-center p-0 space-y-4 overflow-hidden">
       <div className="p-2 rounded-lg text-center w-full max-w-md">
@@ -192,7 +212,7 @@ const Main = () => {
           <p className="text-center text-4xl font-bold mt-2">
             {farm.toFixed(2)} <span className="text-purple-400">lunar</span>
           </p>
-        </div>/
+        </div>
       </div>
       <button
         className="mt-6 bg-zinc-700 text-white py-2 px-6 rounded-lg"
