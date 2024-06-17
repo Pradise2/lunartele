@@ -179,7 +179,7 @@ const Main = () => {
     } else {
       setFarmClaimed(farmClaimed + farm);
       setFarm(0);
-      setFarmTime(60);
+      setFarmTime(6*60*60);
       setIsClaimClicked(false); // Reset the tapTime
     }
   };
