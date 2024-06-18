@@ -35,63 +35,76 @@ const Main = () => {
       console.error('Telegram WebApp script is not loaded.');
     }
   }, []);
+
+  const mergeData = (dbData, localData) => {
+    const currentTime = new Date().getTime();
+    const elapsedTime = Math.floor((currentTime - localData.lastLoginTime) / 1000);
+    const farmElapsedTime = localData.farmStartTime ? Math.floor((currentTime - localData.farmStartTime) / 1000) : 0;
+
+     // If dbData exists, it takes precedence over localData.
+  const tapLeft = dbData.tapLeft ?? localData.tapLeft;
+  const tapTime = dbData.tapTime ?? localData.tapTime;
+  const taps = dbData.taps ?? localData.taps;
+  const farmTime = dbData.farmTime ?? localData.farmTime;
+  const farm = dbData.farm ?? localData.farm;
+  const farmClaimed = dbData.farmClaimed ?? localData.farmClaimed;
+  const totalBal = dbData.totalBal ?? localData.totalBal;
+
+
+    return {
+      ...localData, // Default to localData
+      ...dbData, // Override with dbData where available
+      tapLeft,
+      tapTime: Math.max(tapTime - elapsedTime, 0),
+      taps,
+      farmTime: Math.max(farmTime - farmElapsedTime, 0),
+      farm: farm + (localData.farmStartTime ? farmElapsedTime * 0.01 : 0),
+      totalBal: totalBal + (localData.farmStartTime ? farmElapsedTime * 0.01 : 0),
+      lastLoginTime: currentTime,
+      farmStartTime: localData.farmStartTime,
+    };
+  };
+
+
   const loadUserData = async (userId) => {
     try {
       const localStorageData = JSON.parse(localStorage.getItem(`userData-${userId}`));
-      if (localStorageData) {
-        const currentTime = new Date().getTime();
-        const elapsedTime = Math.floor((currentTime - localStorageData.lastLoginTime) / 1000);
-        const farmElapsedTime = localStorageData.farmStartTime ? Math.floor((currentTime - localStorageData.farmStartTime) / 1000) : 0;
-
-        setTapLeft(localStorageData.tapLeft);
-        setTapTime(Math.max(localStorageData.tapTime - elapsedTime, 0));
-        setTaps(localStorageData.taps);
-        setFarmTime(Math.max(localStorageData.farmTime - farmElapsedTime, 0));
-        setFarm(localStorageData.farm + (localStorageData.farmStartTime ? farmElapsedTime * 0.01 : 0));
-        setFarmClaimed(localStorageData.farmClaimed);
-        setTotalBal(localStorageData.totalBal + (localStorageData.farmStartTime ? farmElapsedTime * 0.01 : 0));
-        setUserExists(true);
-
-        if (localStorageData.farmStartTime && localStorageData.farmTime > 0) {
-          startFarmInterval();
-        }
-
-        return;
-      }
-
-      // Attempt to fetch Firestore document
-      const docRef = doc(db, 'dat', String(userId));
+      const docRef = doc(db, 'data', String(userId));
       const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const currentTime = new Date().getTime();
-        const elapsedTime = Math.floor((currentTime - data.lastLoginTime) / 1000);
-        const farmElapsedTime = data.farmStartTime ? Math.floor((currentTime - data.farmStartTime) / 1000) : 0;
+      if (localStorageData && docSnap.exists()) {
+        const dbData = docSnap.data();
+        const mergedData = mergeData(dbData, localStorageData);
+        await setDoc(docRef, mergedData);  // Update Firestore with merged data
 
-        setTapLeft(data.tapLeft);
-        setTapTime(Math.max(data.tapTime - elapsedTime, 0));
-        setTaps(data.taps);
-        setFarmTime(Math.max(data.farmTime - farmElapsedTime, 0));
-        setFarm(data.farm + (data.farmStartTime ? farmElapsedTime * 0.01 : 0));
-        setFarmClaimed(data.farmClaimed);
-        setTotalBal(data.totalBal + (data.farmStartTime ? farmElapsedTime * 0.01 : 0));
+        setStateFromData(mergedData);
         setUserExists(true);
-
-        localStorage.setItem(`userData-${userId}`, JSON.stringify(data));
-
-        if (data.farmStartTime && data.farmTime > 0) {
-          startFarmInterval();
-        }
       } else if (localStorageData) {
-        // If document does not exist, create it using localStorage data
         await setDoc(docRef, localStorageData);
-        console.log("Document was missing, created a new one using local storage data.");
+        setStateFromData(localStorageData);
+        setUserExists(true);
+      } else if (docSnap.exists()) {
+        const dbData = docSnap.data();
+        setStateFromData(dbData);
+        setUserExists(true);
       } else {
         setUserExists(false);
       }
     } catch (error) {
       console.error("Error getting document:", error);
+    }
+  };
+
+  const setStateFromData = (data) => {
+    setTapLeft(data.tapLeft);
+    setTapTime(data.tapTime);
+    setTaps(data.taps);
+    setFarmTime(data.farmTime);
+    setFarm(data.farm);
+    setFarmClaimed(data.farmClaimed);
+    setTotalBal(data.totalBal);
+    if (data.farmStartTime && data.farmTime > 0) {
+      startFarmInterval();
     }
   };
 
@@ -101,7 +114,7 @@ const Main = () => {
       return;
     }
     try {
-      const docRef = doc(db, 'dat', String(userId));
+      const docRef = doc(db, 'data', String(userId));
       const currentTime = new Date().getTime();
       const data = {
         userId: userId,
