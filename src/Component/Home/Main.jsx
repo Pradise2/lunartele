@@ -71,6 +71,17 @@ const Main = () => {
     const currentTime = new Date().getTime();
     const elapsedTime = Math.floor((currentTime - data.farmStartTime) / 1000);
   
+    // Update tapping state
+    if (data.tapTime > 0) {
+      const newTapTime = data.tapTime - elapsedTime;
+      if (newTapTime <= 0) {
+        setTapLeft(1000); // Reset taps if time elapsed
+        setTapTime(4 * 60 * 60); // Reset tap time
+      } else {
+        setTapTime(newTapTime);
+      }
+    }
+
     if (data.isFarmActive && elapsedTime >= data.farmTime) {
       const newFarm = data.farm + (data.farmTime * 0.01);
       setFarmClaimed((prevFarmClaimed) => prevFarmClaimed + newFarm);
