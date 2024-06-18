@@ -41,30 +41,20 @@ const Main = () => {
     const elapsedTime = Math.floor((currentTime - localData.lastLoginTime) / 1000);
     const farmElapsedTime = localData.farmStartTime ? Math.floor((currentTime - localData.farmStartTime) / 1000) : 0;
 
-     // If dbData exists, it takes precedence over localData.
-  const tapLeft = dbData.tapLeft ?? localData.tapLeft;
-  const tapTime = dbData.tapTime ?? localData.tapTime;
-  const taps = dbData.taps ?? localData.taps;
-  const farmTime = dbData.farmTime ?? localData.farmTime;
-  const farm = dbData.farm ?? localData.farm;
-  const farmClaimed = dbData.farmClaimed ?? localData.farmClaimed;
-  const totalBal = dbData.totalBal ?? localData.totalBal;
-
-
-    return {
-      ...localData, // Default to localData
-      ...dbData, // Override with dbData where available
-      tapLeft,
-      tapTime: Math.max(tapTime - elapsedTime, 0),
-      taps,
-      farmTime: Math.max(farmTime - farmElapsedTime, 0),
-      farm: farm + (localData.farmStartTime ? farmElapsedTime * 0.01 : 0),
-      totalBal: totalBal + (localData.farmStartTime ? farmElapsedTime * 0.01 : 0),
+    const mergedData = {
+      tapLeft: dbData.tapLeft ?? localData.tapLeft,
+      tapTime: Math.max((dbData.tapTime ?? localData.tapTime) - elapsedTime, 0),
+      taps: dbData.taps ?? localData.taps,
+      farmTime: Math.max((dbData.farmTime ?? localData.farmTime) - farmElapsedTime, 0),
+      farm: (dbData.farm ?? localData.farm) + (localData.farmStartTime ? farmElapsedTime * 0.01 : 0),
+      farmClaimed: dbData.farmClaimed ?? localData.farmClaimed,
+      totalBal: (dbData.totalBal ?? localData.totalBal) + (localData.farmStartTime ? farmElapsedTime * 0.01 : 0),
       lastLoginTime: currentTime,
       farmStartTime: localData.farmStartTime,
     };
-  };
 
+    return mergedData;
+  };
 
   const loadUserData = async (userId) => {
     try {
@@ -75,8 +65,7 @@ const Main = () => {
       if (localStorageData && docSnap.exists()) {
         const dbData = docSnap.data();
         const mergedData = mergeData(dbData, localStorageData);
-        await setDoc(docRef, mergedData);  // Update Firestore with merged data
-
+        await setDoc(docRef, mergedData);
         setStateFromData(mergedData);
         setUserExists(true);
       } else if (localStorageData) {
@@ -191,16 +180,13 @@ const Main = () => {
   };
 
   const handleStartClick = () => {
-    if (!isFarmActive) {
-      if (farmTime > 0) {
-        setIsFarmActive
-        setIsFarmActive(true);
-        startFarmInterval();
-      }
-    } else if (farmTime === 0) {
+    if (!isFarmActive && farmTime > 0) {
+      setIsFarmActive(true);
+      startFarmInterval();
+    } else if (isFarmActive && farmTime === 0) {
       setFarmClaimed((prevFarmClaimed) => prevFarmClaimed + farm);
-    setTotalBal((prevTotalBal) => prevTotalBal + farm);
-    setFarm(0);
+      setTotalBal((prevTotalBal) => prevTotalBal + farm);
+      setFarm(0);
       setFarmTime(60);
       setIsFarmActive(false);
       clearInterval(farmIntervalRef.current);
