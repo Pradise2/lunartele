@@ -59,6 +59,7 @@ const Main = () => {
 
         return;
       }
+      
       const docRef = doc(db, 'test', String(userId));
       const docSnap = await getDoc(docRef);
 
@@ -82,6 +83,10 @@ const Main = () => {
         if (isFarmActive && farmTime > 0) {
           startFarmInterval();
         }
+      } else if (localStorageData) {
+        // If document does not exist, create it using localStorage data
+        await setDoc(docRef, localStorageData);
+        console.log("Document was missing, created a new one using local storage data.");
       } else {
         setUserExists(false);
       }
